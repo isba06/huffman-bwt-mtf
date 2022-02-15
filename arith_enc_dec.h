@@ -41,10 +41,8 @@ int buffer;
 int bits_to_go;
 int garbage_bits;
 
-// Обрабатываемые файлы
 FILE *in, *out;
 
-//------------------------------------------------------------
 // Инициализация адаптивной модели
 void start_model (void)
 {
@@ -63,7 +61,6 @@ void start_model (void)
     freq [0] = 0;
 }
 
-//------------------------------------------------------------
 // Обновление модели очередным символом
 void update_model ( int symbol)
 {
@@ -83,7 +80,6 @@ void update_model ( int symbol)
             cum += freq [i];
         }
     }
-
     for ( i = symbol; freq [i] == freq [i - 1]; i--);
     if (i < symbol)
     {
@@ -94,7 +90,6 @@ void update_model ( int symbol)
         char_to_index [ch_i]      = symbol;
         char_to_index [ch_symbol] = i;
     }
-
     // обновление значений в таблицах частот
     freq [i] += 1;
     while (i > 0)
@@ -104,7 +99,6 @@ void update_model ( int symbol)
     }
 }
 
-//------------------------------------------------------------
 // Инициализация побитового ввода
 void start_inputing_bits (void)
 {
@@ -112,7 +106,6 @@ void start_inputing_bits (void)
     garbage_bits = 0;
 }
 
-//------------------------------------------------------------
 // Ввод очередного бита сжатой информации
 int input_bit (void)
 {
@@ -138,7 +131,6 @@ int input_bit (void)
     return t;
 }
 
-//------------------------------------------------------------
 // Инициализация побитового вывода
 void start_outputing_bits (void)
 {
@@ -146,7 +138,6 @@ void start_outputing_bits (void)
     bits_to_go = 8;
 }
 
-//------------------------------------------------------------
 // Вывод очередного бита сжатой информации
 void output_bit ( int bit)
 {
@@ -196,9 +187,7 @@ void done_encoding (void)
         output_bit_plus_follow (1);
 }
 
-/* Инициализация регистров перед декодированием.
-   Загрузка начала сжатого сообщения
-*/
+// Инициализация регистров перед декодированием. Загрузка начала сжатого сообщения
 void start_decoding (void)
 {
     int i;
@@ -210,7 +199,6 @@ void start_decoding (void)
     high = TOP_VALUE;
 }
 
-// Кодирование очередного символа
 void encode_symbol ( int symbol)
 {
     long range;
@@ -243,7 +231,6 @@ void encode_symbol ( int symbol)
     }
 }
 
-// Декодирование очередного символа
 int decode_symbol (void)
 {
     long range;
@@ -286,7 +273,6 @@ int decode_symbol (void)
     return symbol;
 }
 
-// Собственно адаптивное арифметическое кодирование
 void encode ( const char *infile, const char *outfile)
 {
     int ch, symbol;
@@ -314,8 +300,6 @@ void encode ( const char *infile, const char *outfile)
     fclose (out);
 }
 
-
-// Собственно адаптивное арифметическое декодирование
 void decode ( const char *infile, const char *outfile)
 {
     int ch, symbol;
@@ -339,24 +323,3 @@ void decode ( const char *infile, const char *outfile)
     fclose (in);
     fclose (out);
 }
-
-//------------------------------------------------------------
-// Головная процедура
-/*
-int main(int argc, char* argv[])
-{
-    encode("bib_encoded", "ENCODE");
-    decode("ENCODE", "DECODE");
-    if (argc < 4)
-    {
-        printf ("\n Using: Arith_adapt e|d infile outfile\n");
-        exit (0);
-    }
-    if (argv [1] [0] == 'e')
-        encode ( argv [2], argv [3]);
-    else if (argv [1] [0] == 'd')
-        decode ( argv [2], argv [3]);
-    exit (0);
-
-    return 0;
-}*/

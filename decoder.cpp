@@ -10,11 +10,7 @@
 #include "arith_enc_dec.h"
 size_t BYTE_SIZE = 256;
 
-std::vector<unsigned char>
-read_bytes(
-        const std::string &file_name,
-        const bool read_meta = false
-) {
+std::vector<unsigned char> read_bytes(const std::string &file_name, const bool read_meta = false) {
     size_t initial_data_size = SIZE_MAX;
     size_t bwt_shift_position = SIZE_MAX;
     long size_of_tree = SIZE_MAX;
@@ -35,9 +31,7 @@ read_bytes(
     return data;
 }
 
-std::vector<unsigned char> move_to_front(
-        std::vector<unsigned char> data
-) {
+std::vector<unsigned char> move_to_front(std::vector<unsigned char> data) {
     std::vector<unsigned char> alphabet(BYTE_SIZE);
     std::iota(alphabet.begin(), alphabet.end(), 0);
     std::vector<unsigned char> encoded_data(data.size());
@@ -56,9 +50,7 @@ std::vector<unsigned char> move_to_front(
     return encoded_data;
 }
 
-std::vector<unsigned char> move_to_front_reverse(
-        std::vector<unsigned char> data
-) {
+std::vector<unsigned char> move_to_front_reverse(std::vector<unsigned char> data) {
     std::vector<unsigned char> alphabet(BYTE_SIZE);
     std::iota(alphabet.begin(), alphabet.end(), 0);
     std::vector<unsigned char> decoded_data(data.size());
@@ -74,11 +66,7 @@ std::vector<unsigned char> move_to_front_reverse(
     return decoded_data;
 }
 
-size_t cyclic_index(
-        const size_t &start_index,
-        const size_t &offset,
-        const size_t &n
-) {
+size_t cyclic_index(const size_t &start_index, const size_t &offset, const size_t &n) {
     return start_index + offset < n ? start_index + offset : start_index + offset - n;
 }
 
@@ -107,9 +95,7 @@ public:
     }
 };
 
-std::pair<size_t, std::vector<unsigned char>> bwt(
-        std::vector<unsigned char> data
-) {
+std::pair<size_t, std::vector<unsigned char>> bwt(std::vector<unsigned char> data) {
     std::vector<size_t> shift_order(data.size());
     std::iota(shift_order.begin(), shift_order.end(), 0);
     std::stable_sort(shift_order.begin(), shift_order.end(), bwt_cmp_straight(data));
@@ -123,10 +109,7 @@ std::pair<size_t, std::vector<unsigned char>> bwt(
     return std::make_pair(shift_position, encoded);
 }
 
-std::vector<unsigned char> bwt_reverse(
-        const std::vector<unsigned char> &bwt_data,
-        size_t row_index
-) {
+std::vector<unsigned char> bwt_reverse(const std::vector<unsigned char> &bwt_data, size_t row_index) {
     std::vector<size_t> l_shift(bwt_data.size());
     std::iota(l_shift.begin(), l_shift.end(), 0);
     std::stable_sort(l_shift.begin(), l_shift.end(), bwt_cmp_reverse(bwt_data));
