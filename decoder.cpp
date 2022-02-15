@@ -163,40 +163,30 @@ void write_bytes(
 }
 
 int main(int argc, char* argv[]) {
-    std::string in;
-    std::cin >> in;
-
-    if(in == "e") {
-        std::string input_file = "bib";
-        std::string output_temporary_file = "mtf";
-        std::string output_encoded_main_file = "encoded_" + input_file;
-        std::vector<unsigned char> bytes_input = read_bytes(input_file);
-        auto bwt_result = bwt(bytes_input);
-        auto bwt_data = bwt_result.second;
-        auto bwt_shift_position = bwt_result.first;
-        auto mtf_data = move_to_front(bwt_data);
-        write_bytes(output_temporary_file, mtf_data);
-        const char *cstr = output_temporary_file.c_str();
-        const char *cstr_out = output_encoded_main_file.c_str();
-        encode(cstr, cstr_out);
-        std::remove(cstr);
+    if(argc < 2) {
+        std::cout << "[input file] or [input file][output file]" << std::endl;
+        return 1;
     }
-    else if (in == "d"){
-        std::string input_file = "encoded_bib";
-        std::string output_temporary_file = "reverse_mtf";
-        std::string output_decoded_main_file = "decoded_" + input_file;
-        const char *cstr = input_file.c_str();
-        const char *cstr_out = output_temporary_file.c_str();
-        decode(cstr, cstr_out);
-        std::vector<unsigned char> bytes_input = read_bytes(
-                output_temporary_file, true);
-        auto bwt_shift_position = bytes_input[bytes_input.size()-1];
-        bytes_input.pop_back();
-        auto decoded_mtf = move_to_front_reverse(bytes_input);
-        auto decoded_data = bwt_reverse(decoded_mtf, bwt_shift_position);
-        write_bytes(output_decoded_main_file, decoded_data);
-        std::remove(cstr_out);
+    std::string input_file;
+    std::string output_decoded_main_file;
+    if(argc == 3){
+        output_decoded_main_file =  argv[2];
     }
+    else {
+        output_decoded_main_file =  input_file + "_decoded";
+    }
+    std::string output_temporary_file = "reverse_mtf";
+    const char *cstr = input_file.c_str();
+    const char *cstr_out = output_temporary_file.c_str();
+    decode(cstr, cstr_out);
+    std::vector<unsigned char> bytes_input = read_bytes(
+            output_temporary_file, true);
+    auto bwt_shift_position = bytes_input[bytes_input.size()-1];
+    bytes_input.pop_back();
+    auto decoded_mtf = move_to_front_reverse(bytes_input);
+    auto decoded_data = bwt_reverse(decoded_mtf, bwt_shift_position);
+    write_bytes(output_decoded_main_file, decoded_data);
+    std::remove(cstr_out);
 
     return 0;
 }

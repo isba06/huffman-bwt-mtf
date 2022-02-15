@@ -3,4 +3,4 @@ project(bwt_mtf_arithmetic)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(bwt_mtf_arithmetic main.cpp)
+add_executable(bwt_mtf_arithmetic decoder.cpp)

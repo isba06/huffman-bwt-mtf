@@ -160,36 +160,29 @@ void write_bytes(
 }
 
 int main(int argc, char* argv[]) {
-    std::vector<std::string> filenames {
-        "bib",
-        "book1",
-        "book2",
-        "geo",
-        "news",
-        "obj1",
-        "obj2",
-        "paper1",
-        "paper2",
-        "pic",
-        "progc",
-        "progl",
-        "progp",
-        "trans",
-    };
-    for(int i = 0; i < filenames.size(); i++) {
-        std::string input_file = filenames[i];
-        std::string output_temporary_file =  input_file + "_mtf";
-        std::string output_encoded_main_file =  input_file + "_encoded";
-        std::vector<unsigned char> bytes_input = read_bytes(input_file);
-        auto bwt_result = bwt(bytes_input);
-        auto bwt_data = bwt_result.second;
-        auto bwt_shift_position = bwt_result.first;
-        auto mtf_data = move_to_front(bwt_data);
-        write_bytes(output_temporary_file, mtf_data);
-        const char *cstr = output_temporary_file.c_str();
-        const char *cstr_out = output_encoded_main_file.c_str();
-        encode(cstr, cstr_out);
-        std::remove(cstr);
+    if(argc < 2) {
+        std::cout << "[input file] or [input file][output file]" << std::endl;
+        return 1;
     }
+    std::string input_file;
+    std::string output_encoded_main_file;
+    if(argc == 3){
+        output_encoded_main_file =  argv[2];
+    }
+    else {
+        output_encoded_main_file =  input_file + "_encoded";
+    }
+    input_file = argv[1];
+    std::string output_temporary_file =  input_file + "_mtf";
+    std::vector<unsigned char> bytes_input = read_bytes(input_file);
+    auto bwt_result = bwt(bytes_input);
+    auto bwt_data = bwt_result.second;
+    auto bwt_shift_position = bwt_result.first;
+    auto mtf_data = move_to_front(bwt_data);
+    write_bytes(output_temporary_file, mtf_data);
+    const char *cstr = output_temporary_file.c_str();
+    const char *cstr_out = output_encoded_main_file.c_str();
+    encode(cstr, cstr_out);
+    std::remove(cstr);
     return 0;
 }
