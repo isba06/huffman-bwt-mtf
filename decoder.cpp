@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
         std::cout << "[input file] or [input file][output file]" << std::endl;
         return 1;
     }
-    std::string input_file;
+    std::string input_file = argv[1];
     std::string output_decoded_main_file;
     if(argc == 3){
         output_decoded_main_file =  argv[2];
