@@ -11,11 +11,8 @@
 size_t BYTE_SIZE = 256;
 
 std::vector<unsigned char> read_bytes(const std::string &file_name, const bool read_meta = false) {
-    size_t initial_data_size = SIZE_MAX;
     size_t bwt_shift_position = SIZE_MAX;
-    long size_of_tree = SIZE_MAX;
     std::vector<unsigned char> data;
-    std::vector<unsigned char> huffman_tree_encoded;
 
     std::ifstream fin(file_name, std::ios::binary);
     std::vector<unsigned char> bytes((std::istreambuf_iterator<char>(fin)), {});
@@ -121,56 +118,58 @@ std::vector<unsigned char> bwt_reverse(const std::vector<unsigned char> &bwt_dat
     }
     return initial_data;
 }
+std::tuple<std::vector<unsigned char>, size_t>
+TTread_bytes(
+        const std::string &file_name,
+        const bool read_meta = false
+) {
+    size_t bwt_shift_position = SIZE_MAX;
+    long size_of_tree = SIZE_MAX;
+    std::vector<unsigned char> data;
+    std::ifstream fin(file_name, std::ios::binary);
+    std::vector<unsigned char> bytes((std::istreambuf_iterator<char>(fin)), {});
+    fin.close();
 
+    if (read_meta) {
+        bwt_shift_position = *((size_t *) bytes.data());
+        data = bytes;
+    } else {
+        data = bytes;
+    }
+    return {data, bwt_shift_position};
+}
 
 void write_bytes(
         const std::string &file_name,
         const std::vector<unsigned char> &data,
-        const size_t bwt_shift_position = SIZE_MAX,
-        const size_t initial_data_size = SIZE_MAX,
-        const unsigned long size_of_tree = SIZE_MAX,
-        const std::vector<unsigned char> &huffman_tree_encoded = std::vector<unsigned char>()
+        const size_t bwt_shift_position = SIZE_MAX
 ) {
     std::ofstream fout(file_name, std::ios::binary);
     if (bwt_shift_position != SIZE_MAX) {
         fout.write(reinterpret_cast<const char *>(&bwt_shift_position), sizeof(size_t));
-        fout.write(reinterpret_cast<const char *>(&initial_data_size), sizeof(size_t));
-        fout.write(reinterpret_cast<const char *>(&size_of_tree), sizeof(unsigned long));
-        fout.write(
-                reinterpret_cast<const char *>(huffman_tree_encoded.data()),
-                static_cast<long>(huffman_tree_encoded.size())
-        );
     }
     fout.write(reinterpret_cast<const char *>(data.data()), static_cast<long>(data.size()));
     fout.close();
 }
 
 int main(int argc, char* argv[]) {
-    if(argc < 2) {
-        std::cout << "[input file] or [input file][output file]" << std::endl;
-        return 1;
-    }
-    std::string input_file = argv[1];
-    std::string output_decoded_main_file;
-    if(argc == 3){
-        output_decoded_main_file =  argv[2];
-    }
-    else {
-        output_decoded_main_file =  input_file + "_decoded";
-    }
-    std::string output_temporary_file = "reverse_mtf";
+    std::string input_file = "newbib2";
+    std::string output_decoded_main_file = "newdecoded22";
+    std::string output_temporary_file = "debug_decode_mtf2";
     const char *cstr = input_file.c_str();
     const char *cstr_out = output_temporary_file.c_str();
     decode(cstr, cstr_out);
-    std::vector<unsigned char> bytes_input = read_bytes(
+    //std::vector<unsigned char> bytes_input = read_bytes(output_temporary_file, true);
+    const auto &[bytes_input, bwt_shift_position] = TTread_bytes(
             output_temporary_file, true);
-    auto bwt_shift_position = bytes_input[bytes_input.size()-1];
-    bytes_input.pop_back();
+    //auto bwt_shift_position = bytes_input.back();
+    //bytes_input.pop_back();
     auto decoded_mtf = move_to_front_reverse(bytes_input);
+    std::cout<< "pos: " << bwt_shift_position << std::endl;
     auto decoded_data = bwt_reverse(decoded_mtf, bwt_shift_position);
     write_bytes(output_decoded_main_file, decoded_data);
-    std::remove(cstr_out);
-
+    //std::remove(cstr_out);
     return 0;
 }
+
 

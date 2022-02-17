@@ -135,54 +135,57 @@ std::vector<unsigned char> bwt_reverse(
     }
     return initial_data;
 }
+std::tuple<std::vector<unsigned char>, size_t>
+TTread_bytes(
+        const std::string &file_name,
+        const bool read_meta = false
+) {
+    size_t bwt_shift_position = SIZE_MAX;
+    long size_of_tree = SIZE_MAX;
+    std::vector<unsigned char> data;
+    std::ifstream fin(file_name, std::ios::binary);
+    std::vector<unsigned char> bytes((std::istreambuf_iterator<char>(fin)), {});
+    fin.close();
 
+    if (read_meta) {
+        bwt_shift_position = *((size_t *) bytes.data());
+        size_of_tree = *((long *) bytes.data() + 2);
+        data = bytes;
+    } else {
+        data = bytes;
+    }
+    return {data, bwt_shift_position};
+}
 
 void write_bytes(
         const std::string &file_name,
         const std::vector<unsigned char> &data,
-        const size_t bwt_shift_position = SIZE_MAX,
-        const size_t initial_data_size = SIZE_MAX,
-        const unsigned long size_of_tree = SIZE_MAX,
-        const std::vector<unsigned char> &huffman_tree_encoded = std::vector<unsigned char>()
+        const size_t bwt_shift_position = SIZE_MAX
 ) {
     std::ofstream fout(file_name, std::ios::binary);
     if (bwt_shift_position != SIZE_MAX) {
         fout.write(reinterpret_cast<const char *>(&bwt_shift_position), sizeof(size_t));
-        fout.write(reinterpret_cast<const char *>(&initial_data_size), sizeof(size_t));
-        fout.write(reinterpret_cast<const char *>(&size_of_tree), sizeof(unsigned long));
-        fout.write(
-                reinterpret_cast<const char *>(huffman_tree_encoded.data()),
-                static_cast<long>(huffman_tree_encoded.size())
-        );
+        std::cout << "cast: " <<bwt_shift_position << std::endl;
     }
     fout.write(reinterpret_cast<const char *>(data.data()), static_cast<long>(data.size()));
     fout.close();
 }
 
 int main(int argc, char* argv[]) {
-    if(argc < 2) {
-        std::cout << "[input file] or [input file][output file]" << std::endl;
-        return 1;
-    }
-    std::string input_file;
-    std::string output_encoded_main_file;
-    if(argc == 3){
-        output_encoded_main_file =  argv[2];
-    }
-    else {
-        output_encoded_main_file =  input_file + "_encoded";
-    }
-    input_file = argv[1];
-    std::string output_temporary_file =  input_file + "_mtf";
-    std::vector<unsigned char> bytes_input = read_bytes(input_file);
+    std::string input_file = "bib";
+    std::string output_encoded_main_file = "newbib2";
+    std::string output_temporary_file =  "debug_encode_mtf2";
+    const auto &[bytes_input, dummy3] = TTread_bytes(input_file);
+    //std::vector<unsigned char> bytes_input = read_bytes(input_file);
     auto bwt_result = bwt(bytes_input);
     auto bwt_data = bwt_result.second;
     auto bwt_shift_position = bwt_result.first;
+    std::cout<< "pos: " << (size_t)bwt_shift_position << std::endl;
     auto mtf_data = move_to_front(bwt_data);
     write_bytes(output_temporary_file, mtf_data);
     const char *cstr = output_temporary_file.c_str();
     const char *cstr_out = output_encoded_main_file.c_str();
     encode(cstr, cstr_out);
-    std::remove(cstr);
+    //std::remove(cstr);
     return 0;
 }
