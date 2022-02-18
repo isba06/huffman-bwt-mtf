@@ -149,24 +149,26 @@ void write_bytes(
 int main(int argc, char* argv[]) {
     std::vector<std::string> file_list = {"bib", "book1", "book2", "geo", "news", "obj1", "obj2", "paper1", "paper2",
                                           "pic", "progc", "progl", "progp", "trans"};
-    //for(auto& file : file_list) {
-    std::string input_file = "bib";
-    std::string output_encoded_main_file = "bib_enc_1";
-    std::string output_temporary_file =  "mrf3_encode_withoutShift";
-    const auto &[bytes_input, dummy3] = read_bytes(input_file);
-    //std::vector<unsigned char> bytes_input = read_bytes(input_file);
-    auto bwt_result = bwt(bytes_input);
-    auto bwt_data = bwt_result.second;
-    auto bwt_shift_position = bwt_result.first;
-    std::cout<< "pos: " << (size_t)bwt_shift_position << std::endl;
-    auto mtf_data = move_to_front(bwt_data);
-    write_bytes(output_temporary_file, mtf_data, bwt_shift_position);
-    const char *cstr = output_temporary_file.c_str();
-    const char *cstr_out = output_encoded_main_file.c_str();
-    encode(cstr, cstr_out);
-    //std::remove(cstr);
-    return 0;
-   // }
+    std::string dir = "calgarycorpus/";
+    int a = 0;
+    for(auto& file : file_list) {
+        std::string input_file = dir + file;
+        std::string output_encoded_main_file = dir + file + ".enc";
+        std::string output_temporary_file =  dir + "mtf";
+        const auto &[bytes_input, dummy3] = read_bytes(input_file);
+        //std::vector<unsigned char> bytes_input = read_bytes(input_file);
+        auto bwt_result = bwt(bytes_input);
+        auto bwt_data = bwt_result.second;
+        auto bwt_shift_position = bwt_result.first;
+        std::cout<< "pos: " << (size_t)bwt_shift_position << std::endl;
+        auto mtf_data = move_to_front(bwt_data);
+        write_bytes(output_temporary_file, mtf_data, bwt_shift_position);
+        const char *cstr = output_temporary_file.c_str();
+        const char *cstr_out = output_encoded_main_file.c_str();
+        encode(cstr, cstr_out);
+        std::remove(cstr);
+        std::cout << ++a << std::endl;
+    }
     return 0;
     /*
     if (argc < 2){

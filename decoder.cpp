@@ -96,6 +96,10 @@ read_bytes(
     long size_of_tree = SIZE_MAX;
     std::vector<unsigned char> data;
     std::ifstream fin(file_name, std::ios::binary);
+    if(!fin.is_open()) {
+        std::cout << "File isn't open!" << std::endl;
+        exit(0);
+    }
     std::vector<unsigned char> bytes((std::istreambuf_iterator<char>(fin)), {});
 
     fin.close();
@@ -119,6 +123,10 @@ void write_bytes(
         const size_t bwt_shift_position = SIZE_MAX
 ) {
     std::ofstream fout(file_name, std::ios::binary);
+    if(!fout.is_open()) {
+        std::cout << "File isn't open!" << std::endl;
+        exit(0);
+    }
     if (bwt_shift_position != SIZE_MAX) {
         fout.write(reinterpret_cast<const char *>(&bwt_shift_position), sizeof(size_t));
     }
@@ -129,25 +137,25 @@ void write_bytes(
 int main(int argc, char* argv[]) {
     std::vector<std::string> file_list = {"bib", "book1", "book2", "geo", "news", "obj1", "obj2", "paper1", "paper2",
                                           "pic", "progc", "progl", "progp", "trans"};
-    //for(auto& file : file_list) {
-    std::string input_file = "bib_enc_1";
-    std::string output_decoded_main_file = "bib_decoded_2";
-    std::string output_temporary_file = "debug_decode_mtf2";
-    const char *cstr = input_file.c_str();
-    const char *cstr_out = output_temporary_file.c_str();
-    decode(cstr, cstr_out);
-    //std::vector<unsigned char> bytes_input = read_bytes(output_temporary_file, true);
-    const auto &[bytes_input, bwt_shift_position] = read_bytes(
-            output_temporary_file, true);
-    //auto bwt_shift_position = bytes_input.back();
-    //bytes_input.pop_back();
-    auto decoded_mtf = move_to_front_reverse(bytes_input);
-    std::cout<< "pos: " << bwt_shift_position << std::endl;
-    auto decoded_data = bwt_reverse(decoded_mtf, bwt_shift_position);
-    write_bytes(output_decoded_main_file, decoded_data);
-    //std::remove(cstr_out);
-    return 0;
-  //  }
+    std::string dir = "calgarycorpus/";
+    for(auto& file : file_list) {
+        std::string input_file = dir + file + ".enc";
+        std::string output_decoded_main_file = dir + file + ".dec";
+        std::string output_temporary_file = file + "_decode_mtf2";
+        const char *cstr = input_file.c_str();
+        const char *cstr_out = output_temporary_file.c_str();
+        decode(cstr, cstr_out);
+        //std::vector<unsigned char> bytes_input = read_bytes(output_temporary_file, true);
+        const auto &[bytes_input, bwt_shift_position] = read_bytes(
+                output_temporary_file, true);
+        //auto bwt_shift_position = bytes_input.back();
+        //bytes_input.pop_back();
+        auto decoded_mtf = move_to_front_reverse(bytes_input);
+        std::cout<< "pos: " << bwt_shift_position << std::endl;
+        auto decoded_data = bwt_reverse(decoded_mtf, bwt_shift_position);
+        write_bytes(output_decoded_main_file, decoded_data);
+        std::remove(cstr_out);
+    }
     return 0;
 }
 
