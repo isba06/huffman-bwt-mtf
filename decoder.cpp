@@ -9,7 +9,7 @@
 #include <fstream>
 #include "arith_enc_dec.h"
 size_t BYTE_SIZE = 256;
-
+/*
 std::vector<unsigned char> read_bytes(const std::string &file_name, const bool read_meta = false) {
     size_t bwt_shift_position = SIZE_MAX;
     std::vector<unsigned char> data;
@@ -27,25 +27,7 @@ std::vector<unsigned char> read_bytes(const std::string &file_name, const bool r
     }
     return data;
 }
-
-std::vector<unsigned char> move_to_front(std::vector<unsigned char> data) {
-    std::vector<unsigned char> alphabet(BYTE_SIZE);
-    std::iota(alphabet.begin(), alphabet.end(), 0);
-    std::vector<unsigned char> encoded_data(data.size());
-    for (size_t i = 0; i < data.size(); ++i) {
-        auto current_symbol = data[i];
-        auto found_index_it = std::find_if(alphabet.begin(), alphabet.end(),
-                                           [&current_symbol](const unsigned char &c) -> bool {
-                                               return c == current_symbol;
-                                           });
-        auto found_index = found_index_it - alphabet.begin();
-        encoded_data[i] = found_index;
-        if (found_index != 0 && found_index_it != alphabet.end()) {
-            std::rotate(alphabet.begin(), found_index_it, found_index_it + 1);
-        }
-    }
-    return encoded_data;
-}
+*/
 
 std::vector<unsigned char> move_to_front_reverse(std::vector<unsigned char> data) {
     std::vector<unsigned char> alphabet(BYTE_SIZE);
@@ -92,20 +74,6 @@ public:
     }
 };
 
-std::pair<size_t, std::vector<unsigned char>> bwt(std::vector<unsigned char> data) {
-    std::vector<size_t> shift_order(data.size());
-    std::iota(shift_order.begin(), shift_order.end(), 0);
-    std::stable_sort(shift_order.begin(), shift_order.end(), bwt_cmp_straight(data));
-
-    std::vector<unsigned char> encoded(data.size());
-    size_t shift_position;
-    for (size_t i = 0; i < data.size(); ++i) {
-        encoded[i] = data[cyclic_index(shift_order[i], data.size() - 1, data.size())];
-        if (shift_order[i] == 0) shift_position = i;
-    }
-    return std::make_pair(shift_position, encoded);
-}
-
 std::vector<unsigned char> bwt_reverse(const std::vector<unsigned char> &bwt_data, size_t row_index) {
     std::vector<size_t> l_shift(bwt_data.size());
     std::iota(l_shift.begin(), l_shift.end(), 0);
@@ -118,8 +86,9 @@ std::vector<unsigned char> bwt_reverse(const std::vector<unsigned char> &bwt_dat
     }
     return initial_data;
 }
+
 std::tuple<std::vector<unsigned char>, size_t>
-TTread_bytes(
+read_bytes(
         const std::string &file_name,
         const bool read_meta = false
 ) {
@@ -128,14 +97,19 @@ TTread_bytes(
     std::vector<unsigned char> data;
     std::ifstream fin(file_name, std::ios::binary);
     std::vector<unsigned char> bytes((std::istreambuf_iterator<char>(fin)), {});
+
     fin.close();
 
+    std::cout <<"size: " <<bytes.size() << std::endl;
     if (read_meta) {
         bwt_shift_position = *((size_t *) bytes.data());
+        auto iter = bytes.begin();
+        bytes.erase(iter, iter+4);
         data = bytes;
     } else {
         data = bytes;
     }
+
     return {data, bwt_shift_position};
 }
 
@@ -153,14 +127,17 @@ void write_bytes(
 }
 
 int main(int argc, char* argv[]) {
-    std::string input_file = "newbib2";
-    std::string output_decoded_main_file = "newdecoded22";
+    std::vector<std::string> file_list = {"bib", "book1", "book2", "geo", "news", "obj1", "obj2", "paper1", "paper2",
+                                          "pic", "progc", "progl", "progp", "trans"};
+    //for(auto& file : file_list) {
+    std::string input_file = "bib_enc_1";
+    std::string output_decoded_main_file = "bib_decoded_2";
     std::string output_temporary_file = "debug_decode_mtf2";
     const char *cstr = input_file.c_str();
     const char *cstr_out = output_temporary_file.c_str();
     decode(cstr, cstr_out);
     //std::vector<unsigned char> bytes_input = read_bytes(output_temporary_file, true);
-    const auto &[bytes_input, bwt_shift_position] = TTread_bytes(
+    const auto &[bytes_input, bwt_shift_position] = read_bytes(
             output_temporary_file, true);
     //auto bwt_shift_position = bytes_input.back();
     //bytes_input.pop_back();
@@ -169,6 +146,8 @@ int main(int argc, char* argv[]) {
     auto decoded_data = bwt_reverse(decoded_mtf, bwt_shift_position);
     write_bytes(output_decoded_main_file, decoded_data);
     //std::remove(cstr_out);
+    return 0;
+  //  }
     return 0;
 }
 

@@ -7,30 +7,6 @@
 #include "arith_enc_dec.h"
 size_t BYTE_SIZE = 256;
 
-std::vector<unsigned char>
-read_bytes(
-        const std::string &file_name,
-        const bool read_meta = false
-) {
-    size_t initial_data_size = SIZE_MAX;
-    size_t bwt_shift_position = SIZE_MAX;
-    long size_of_tree = SIZE_MAX;
-    std::vector<unsigned char> data;
-    std::vector<unsigned char> huffman_tree_encoded;
-
-    std::ifstream fin(file_name, std::ios::binary);
-    std::vector<unsigned char> bytes((std::istreambuf_iterator<char>(fin)), {});
-    fin.close();
-
-    if (read_meta) {
-        bwt_shift_position = *((size_t *) bytes.data());
-        data = bytes;
-        data.push_back(bwt_shift_position);
-    } else {
-        data = bytes;
-    }
-    return data;
-}
 
 std::vector<unsigned char> move_to_front(
         std::vector<unsigned char> data
@@ -136,7 +112,7 @@ std::vector<unsigned char> bwt_reverse(
     return initial_data;
 }
 std::tuple<std::vector<unsigned char>, size_t>
-TTread_bytes(
+read_bytes(
         const std::string &file_name,
         const bool read_meta = false
 ) {
@@ -149,7 +125,6 @@ TTread_bytes(
 
     if (read_meta) {
         bwt_shift_position = *((size_t *) bytes.data());
-        size_of_tree = *((long *) bytes.data() + 2);
         data = bytes;
     } else {
         data = bytes;
@@ -172,20 +147,49 @@ void write_bytes(
 }
 
 int main(int argc, char* argv[]) {
+    std::vector<std::string> file_list = {"bib", "book1", "book2", "geo", "news", "obj1", "obj2", "paper1", "paper2",
+                                          "pic", "progc", "progl", "progp", "trans"};
+    //for(auto& file : file_list) {
     std::string input_file = "bib";
-    std::string output_encoded_main_file = "newbib2";
-    std::string output_temporary_file =  "debug_encode_mtf2";
-    const auto &[bytes_input, dummy3] = TTread_bytes(input_file);
+    std::string output_encoded_main_file = "bib_enc_1";
+    std::string output_temporary_file =  "mrf3_encode_withoutShift";
+    const auto &[bytes_input, dummy3] = read_bytes(input_file);
     //std::vector<unsigned char> bytes_input = read_bytes(input_file);
     auto bwt_result = bwt(bytes_input);
     auto bwt_data = bwt_result.second;
     auto bwt_shift_position = bwt_result.first;
     std::cout<< "pos: " << (size_t)bwt_shift_position << std::endl;
     auto mtf_data = move_to_front(bwt_data);
-    write_bytes(output_temporary_file, mtf_data);
+    write_bytes(output_temporary_file, mtf_data, bwt_shift_position);
     const char *cstr = output_temporary_file.c_str();
     const char *cstr_out = output_encoded_main_file.c_str();
     encode(cstr, cstr_out);
     //std::remove(cstr);
     return 0;
+   // }
+    return 0;
+    /*
+    if (argc < 2){
+        std::cout << "Wrong argument! Enter [input file][output file]" << std::endl;
+        return 1;
+    }
+    std::string input_file = argv[1];
+    std::string output_encoded_main_file;
+    if (argc == 3){
+        output_encoded_main_file = input_file + ".enc";
+    }
+    else output_encoded_main_file = argv[2];
+    std::string output_temporary_file =  "encode_mtf";
+    const auto &[bytes_input, a] = read_bytes(input_file);
+    auto bwt_result = bwt(bytes_input);
+    auto bwt_data = bwt_result.second;
+    auto bwt_shift_position = bwt_result.first;
+    auto mtf_data = move_to_front(bwt_data);
+    write_bytes(output_temporary_file, mtf_data);
+    const char *cstr = output_temporary_file.c_str();
+    const char *cstr_out = output_encoded_main_file.c_str();
+    encode(cstr, cstr_out);
+    std::remove(cstr);
+    return 0;
+     */
 }
